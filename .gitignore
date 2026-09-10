@@ -1,0 +1,7 @@
+backend/.venv/
+__pycache__/
+*.pyc
+backend/prahari.db
+backend/prahari.db-wal
+backend/prahari.db-shm
+.pytest_cache/

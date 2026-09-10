@@ -1,0 +1,55 @@
+{
+  "source": "MOCK_IMD_CWC",
+  "note": "Realistic sample IMD rainfall / CWC river-level feed for the demo city (Mumbai/Maharashtra monsoon). Swap this file for a live client; the ingestion interface is identical.",
+  "generated_for": "Mumbai",
+  "zones": [
+    {
+      "zone_id": "MH-MUM-KURLA",
+      "zone_name": "Kurla / Mithi River",
+      "lat": 19.0726,
+      "lon": 72.8845,
+      "landmarks": ["kurla station", "mithi river", "kalina", "bkc"],
+      "rainfall_mm_last_3h": 92.0,
+      "river_level_m": 4.6,
+      "river_danger_m": 4.2,
+      "risk_level": "elevated",
+      "reason": "IMD red alert; Mithi River above danger mark"
+    },
+    {
+      "zone_id": "MH-MUM-HINDMATA",
+      "zone_name": "Hindmata / Dadar",
+      "lat": 19.0176,
+      "lon": 72.8420,
+      "landmarks": ["hindmata", "dadar", "parel", "king circle"],
+      "rainfall_mm_last_3h": 78.0,
+      "river_level_m": null,
+      "river_danger_m": null,
+      "risk_level": "elevated",
+      "reason": "IMD orange alert; chronic low-lying waterlogging pocket"
+    },
+    {
+      "zone_id": "MH-MUM-ANDHERI",
+      "zone_name": "Andheri Subway",
+      "lat": 19.1197,
+      "lon": 72.8464,
+      "landmarks": ["andheri subway", "andheri", "gundavali"],
+      "rainfall_mm_last_3h": 41.0,
+      "river_level_m": null,
+      "river_danger_m": null,
+      "risk_level": "watch",
+      "reason": "Moderate rainfall; subway prone to flooding"
+    },
+    {
+      "zone_id": "MH-MUM-COLABA",
+      "zone_name": "Colaba",
+      "lat": 18.9067,
+      "lon": 72.8147,
+      "landmarks": ["colaba", "gateway of india", "cuffe parade"],
+      "rainfall_mm_last_3h": 8.0,
+      "river_level_m": null,
+      "river_danger_m": null,
+      "risk_level": "normal",
+      "reason": "Light rain; no active warning"
+    }
+  ]
+}

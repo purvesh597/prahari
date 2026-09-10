@@ -1,0 +1,44 @@
+[
+  {
+    "channel": "whatsapp",
+    "reporter_ref": "wa:+9198XXXXXX01",
+    "lat": 19.0728,
+    "lon": 72.8846,
+    "media_kind": "photo",
+    "body": "water near Kurla Station, cars submerged",
+    "minutes_ago": 12
+  },
+  {
+    "channel": "whatsapp",
+    "reporter_ref": "wa:+9198XXXXXX02",
+    "lat": 19.0719,
+    "lon": 72.8851,
+    "media_kind": "photo",
+    "body": "waist-deep water, people stranded near Kurla",
+    "minutes_ago": 9
+  },
+  {
+    "channel": "sms",
+    "reporter_ref": "sms:+9198XXXXXX03",
+    "body": "FLOOD Kurla Station",
+    "minutes_ago": 6
+  },
+  {
+    "channel": "whatsapp",
+    "reporter_ref": "wa:+9198XXXXXX04",
+    "lat": 19.0177,
+    "lon": 72.8421,
+    "media_kind": "voice",
+    "body": "road fully submerged at Hindmata",
+    "minutes_ago": 20
+  },
+  {
+    "channel": "whatsapp",
+    "reporter_ref": "wa:+9198XXXXXX05",
+    "lat": 18.9068,
+    "lon": 72.8148,
+    "media_kind": "photo",
+    "body": "some water logging near Colaba, knee-deep",
+    "minutes_ago": 15
+  }
+]
