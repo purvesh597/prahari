@@ -5,6 +5,3 @@ backend/prahari.db
 backend/prahari.db-wal
 backend/prahari.db-shm
 .pytest_cache/
-
-# Hero video is large (74MB) — host externally, do not commit
-frontend/video/
