@@ -164,8 +164,8 @@ footer .dev{color:var(--ember)}
 
 <!-- HERO -->
 <header class="hero" id="top">
-  <video autoplay muted loop playsinline poster="">
-    <source src="video/hero.mp4" type="video/mp4" />
+  <video id="heroVideo" autoplay muted playsinline poster="">
+    <source src="video/hero.mp4#t=10" type="video/mp4" />
   </video>
   <div class="overlay"></div>
   <nav>
@@ -461,6 +461,14 @@ async function refresh(){
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
+  // hero video: start at 0:10 and loop from there (not from 0)
+  const hv = document.getElementById("heroVideo");
+  if(hv){
+    const START = 10;
+    const seekStart = ()=>{ if(hv.duration > START && hv.currentTime < START) hv.currentTime = START; };
+    if(hv.readyState >= 1) seekStart(); else hv.addEventListener("loadedmetadata", seekStart);
+    hv.addEventListener("ended", ()=>{ hv.currentTime = START; hv.play(); });
+  }
   initMap();
   document.getElementById("seedBtn").onclick = seed;
   document.getElementById("refreshBtn").onclick = refresh;
