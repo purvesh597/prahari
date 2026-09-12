@@ -1,0 +1,26 @@
+name: Deploy to Render
+
+# Auto-deploy on every push to main. The Render service was created from a
+# public repo URL via API (no Render GitHub App connected), so pushes don't
+# reach Render directly — this workflow triggers the deploy via the Render API.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SERVICE_ID: srv-dailg3gae00c73f0mi9g
+        run: |
+          set -euo pipefail
+          resp=$(curl -fsS -X POST \
+            "https://api.render.com/v1/services/${SERVICE_ID}/deploys" \
+            -H "Authorization: Bearer ${RENDER_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache":"do_not_clear"}')
+          echo "$resp" | python3 -c "import sys,json; d=json.load(sys.stdin); print('Triggered deploy', d.get('id'), '-', d.get('status'))"
