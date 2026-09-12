@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prahari — Officer Console</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">प्रहरी</span>
+      <div>
+        <h1>Prahari</h1>
+        <p>Bystander-corroborated flood verification &mdash; Mumbai / Maharashtra monsoon</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="seedBtn" class="btn">Seed demo reports</button>
+      <button id="refreshBtn" class="btn primary">Refresh feed</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="left">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Active incidents</h2>
+          <div class="legend">
+            <span class="chip high">High-Confidence</span>
+            <span class="chip corr">Corroborated</span>
+            <span class="chip unv">Unverified</span>
+          </div>
+        </div>
+        <div id="incidentList" class="incident-list"></div>
+      </div>
+    </section>
+
+    <section class="center">
+      <div id="map"></div>
+    </section>
+
+    <section class="right">
+      <div class="panel" id="detailPanel">
+        <div class="panel-head"><h2>Incident detail</h2></div>
+        <div id="detail" class="detail">
+          <p class="muted">Select an incident to inspect its reports, ambient corroboration, and evidence trail.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Evidence ledger</h2>
+          <div class="ledger-actions">
+            <button id="verifyLedgerBtn" class="btn small">Verify chain</button>
+            <button id="tamperBtn" class="btn small danger">Simulate tamper</button>
+          </div>
+        </div>
+        <div id="ledgerStatus" class="ledger-status"></div>
+        <div id="ledgerList" class="ledger-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
