@@ -1,7 +1,8 @@
 // Prahari officer console — talks to the FastAPI backend.
 const API = "";
 const TIER_CLASS = { "High-Confidence": "high", "Corroborated": "corr", "Unverified": "unv" };
-const TIER_COLOR = { "High-Confidence": "#ef4444", "Corroborated": "#f59e0b", "Unverified": "#64748b" };
+// tier colors match the landing legend: high = green, corroborated = ember, unverified = red
+const TIER_COLOR = { "High-Confidence": "#5FAE7A", "Corroborated": "#E08E45", "Unverified": "#D3573F" };
 
 let map, markerLayer, incidents = [];
 
@@ -34,10 +35,10 @@ function renderList() {
     el.innerHTML = '<p class="muted" style="padding:10px">No reports yet. Click "Seed demo reports".</p>';
     return;
   }
-  el.innerHTML = incidents.map((i) => {
+  el.innerHTML = incidents.map((i, idx) => {
     const cls = tierClass(i.tier);
     const where = i.zone_name || `${i.lat.toFixed(4)}, ${i.lon.toFixed(4)}`;
-    return `<div class="incident-card ${cls}" data-id="${i.incident_id}">
+    return `<div class="incident-card ${cls}" data-id="${i.incident_id}" tabindex="0" style="animation-delay:${idx * 55}ms">
       <div class="row">
         <span class="zone">${where}</span>
         <span class="tier ${cls}">${i.tier}</span>
@@ -45,8 +46,12 @@ function renderList() {
       <div class="meta">${i.report_count} report(s) · ${i.ambient_flagged ? "ambient risk flagged" : "no ambient flag"}</div>
     </div>`;
   }).join("");
-  el.querySelectorAll(".incident-card").forEach((c) =>
-    c.addEventListener("click", () => showDetail(c.dataset.id)));
+  el.querySelectorAll(".incident-card").forEach((c) => {
+    c.addEventListener("click", () => showDetail(c.dataset.id));
+    c.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showDetail(c.dataset.id); }
+    });
+  });
 }
 
 function renderMarkers() {
@@ -59,6 +64,7 @@ function renderMarkers() {
       fillColor: TIER_COLOR[i.tier],
       fillOpacity: 0.55,
       weight: 2,
+      className: i.tier === "High-Confidence" ? "mk-high" : "",
     }).addTo(markerLayer);
     m.bindTooltip(`${i.zone_name || "Incident"} — ${i.tier}`);
     m.on("click", () => showDetail(i.incident_id));

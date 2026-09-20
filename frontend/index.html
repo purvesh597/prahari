@@ -159,6 +159,26 @@ footer .dev{color:var(--ember)}
 .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--pine-mid);color:var(--ivory)}
 .leaflet-popup-content{font-family:"Work Sans",sans-serif}
 
+/* ---------- animations ---------- */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes heroRise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes blockIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes mkPulse{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes cueDrift{0%{transform:translateY(0);opacity:.6}50%{transform:translateY(8px);opacity:1}100%{transform:translateY(0);opacity:.6}}
+.hero nav{animation:fadeDown .8s .1s ease both}
+.hero-body h1{animation:heroRise 1s .25s cubic-bezier(.2,.7,.2,1) both}
+.hero-body p{animation:fadeUp .9s .5s ease both}
+.hero-body .btn{animation:fadeUp .9s .7s ease both}
+.scroll-cue{animation:fadeIn 1.2s 1s ease both}
+.scroll-cue i{animation:cueDrift 2.4s ease-in-out infinite}
+.block{animation:blockIn .4s ease both}
+.mk-high{animation:mkPulse 1.8s ease-in-out infinite}
+/* scroll-reveal: visible by default; only hidden once JS confirms IntersectionObserver support */
+.js-reveal [data-reveal]{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.js-reveal [data-reveal].in{opacity:1;transform:none}
+
 /* responsive */
 @media(max-width:860px){
   .manifesto .grid{grid-template-columns:1fr}
@@ -168,7 +188,7 @@ footer .dev{color:var(--ember)}
 }
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
-  *{transition:none!important}
+  *{transition:none!important;animation:none!important}
   .btn:hover,.row:hover{transform:none}
 }
 </style>
@@ -198,11 +218,11 @@ footer .dev{color:var(--ember)}
 <!-- MANIFESTO + STATS -->
 <section class="manifesto" id="how">
   <div class="wrap grid">
-    <p class="lead">A flood report only matters if someone can act on it in time. Prahari does not ask a bystander to be calm, technical, or certain — <em>it asks for a tap, a photo, or a voice note.</em> A deterministic engine decides what happens next. AI reads the evidence. It never issues the verdict.</p>
+    <p class="lead" data-reveal>A flood report only matters if someone can act on it in time. Prahari does not ask a bystander to be calm, technical, or certain — <em>it asks for a tap, a photo, or a voice note.</em> A deterministic engine decides what happens next. AI reads the evidence. It never issues the verdict.</p>
     <div class="stats">
-      <div class="stat"><div class="num">3 sec</div><div class="lbl">to file a bystander report, no typing required</div></div>
-      <div class="stat"><div class="num">SHA-256</div><div class="lbl">every verified report is hash-chained into a tamper-evident ledger</div></div>
-      <div class="stat"><div class="num">0</div><div class="lbl">physical sensors; fully software, deployable to any city</div></div>
+      <div class="stat" data-reveal><div class="num">3 sec</div><div class="lbl">to file a bystander report, no typing required</div></div>
+      <div class="stat" data-reveal style="transition-delay:100ms"><div class="num">SHA-256</div><div class="lbl">every verified report is hash-chained into a tamper-evident ledger</div></div>
+      <div class="stat" data-reveal style="transition-delay:200ms"><div class="num">0</div><div class="lbl">physical sensors; fully software, deployable to any city</div></div>
     </div>
   </div>
 </section>
@@ -211,7 +231,7 @@ footer .dev{color:var(--ember)}
 <section class="demo" id="console">
   <div class="wrap">
     <div class="demo-head">
-      <div>
+      <div data-reveal>
         <h2>Officer console, live preview</h2>
         <p>Reports cluster, the rule engine tiers them, and the evidence chain proves nothing was altered. This is a self-contained preview — <a href="/console.html">open the live, API-backed console&nbsp;→</a></p>
       </div>
@@ -221,7 +241,7 @@ footer .dev{color:var(--ember)}
       </div>
     </div>
 
-    <div class="console">
+    <div class="console" data-reveal>
       <div class="panels">
         <div class="panel left">
           <h3>Active incidents</h3>
@@ -252,9 +272,9 @@ footer .dev{color:var(--ember)}
 <!-- CLOSE -->
 <section class="close">
   <div class="wrap">
-    <h2>The next verified report is already on its way.</h2>
-    <p>Built for district disaster management cells — software only, zero hardware.</p>
-    <a class="btn btn-ghost" href="#console">Open the officer console</a>
+    <h2 data-reveal>The next verified report is already on its way.</h2>
+    <p data-reveal style="transition-delay:100ms">Built for district disaster management cells — software only, zero hardware.</p>
+    <a class="btn btn-ghost" href="#console" data-reveal style="transition-delay:200ms">Open the officer console</a>
   </div>
 </section>
 
@@ -328,7 +348,8 @@ function drawMarkers(){
   state.incidents.forEach(inc=>{
     const t = tierOf(inc.reports.length, inc.ambientFlag);
     const m = L.circleMarker([inc.lat,inc.lng],{
-      radius:9, color:TIER[t].color, fillColor:TIER[t].color, fillOpacity:.55, weight:2
+      radius:9, color:TIER[t].color, fillColor:TIER[t].color, fillOpacity:.55, weight:2,
+      className: t==="high" ? "mk-high" : ""
     }).addTo(map);
     m.bindPopup(`<b>${inc.name}</b><br>${inc.reports.length} reports · ${TIER[t].label}`);
     m.on("click",()=>selectIncident(inc.id));
@@ -421,6 +442,7 @@ function renderBlocks(broken=-1){
   state.ledger.forEach((blk,i)=>{
     const d = document.createElement("div");
     d.className = "block"+(broken>=0 && i>=broken?" broken":"");
+    d.style.animationDelay = (i*70)+"ms";
     d.innerHTML = `<div class="bi">block ${i}</div><div class="bd">${blk.data}</div><div class="bh">${blk.hash.slice(0,16)}…</div>`;
     el.appendChild(d);
     if(i<state.ledger.length-1){ const a=document.createElement("div"); a.className="arrow"; a.textContent="→"; el.appendChild(a); }
@@ -475,6 +497,21 @@ async function refresh(){
 
 document.addEventListener("DOMContentLoaded",()=>{
   setupHeroVideo();
+  // scroll-reveal: visible-by-default. Only hide+animate when we can observe,
+  // and always fall back to fully visible so content can never stay hidden.
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reveals = [...document.querySelectorAll("[data-reveal]")];
+  if(!reduceMotion && "IntersectionObserver" in window && reveals.length){
+    document.documentElement.classList.add("js-reveal");
+    const reveal = (el)=>el.classList.add("in");
+    const ro = new IntersectionObserver((entries)=>{
+      entries.forEach((e)=>{ if(e.isIntersecting){ reveal(e.target); ro.unobserve(e.target); } });
+    },{rootMargin:"0px 0px -10% 0px",threshold:.15});
+    reveals.forEach((el)=>ro.observe(el));
+    // safety net: if IntersectionObserver never fires (some embedded/automation
+    // contexts), reveal everything after a short delay so nothing is stuck hidden.
+    setTimeout(()=>reveals.forEach((el)=>{ if(!el.classList.contains("in")){ ro.unobserve(el); reveal(el); } }),2200);
+  }
   // defer Leaflet until the console section is near the viewport
   const demo = document.getElementById("console");
   if("IntersectionObserver" in window){
