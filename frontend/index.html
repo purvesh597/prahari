@@ -4,10 +4,23 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Prahari — bystander-corroborated disaster verification</title>
+<meta name="description" content="Prahari turns scattered bystander flood reports into a tamper-evident triage feed disaster officers can trust — a deterministic rule engine decides the verdict, AI only reads the evidence, and every verified report is hash-chained." />
+<meta name="theme-color" content="#071614" />
+<link rel="canonical" href="https://prahari-mhqy.onrender.com/" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23071614'/%3E%3Cpath d='M16 4l9 3.5v7.2c0 5.9-3.8 9.9-9 12.8-5.2-2.9-9-6.9-9-12.8V7.5z' fill='none' stroke='%23E08E45' stroke-width='2.2'/%3E%3C/svg%3E" />
+<!-- Open Graph / Twitter (og:image still needs a hosted 1200x630 card) -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Prahari" />
+<meta property="og:title" content="Prahari — bystander-corroborated disaster verification" />
+<meta property="og:description" content="Scattered bystander flood reports become a tamper-evident triage feed officers can trust. A deterministic engine decides; AI only reads the evidence." />
+<meta property="og:url" content="https://prahari-mhqy.onrender.com/" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Prahari — bystander-corroborated disaster verification" />
+<meta name="twitter:description" content="Scattered bystander flood reports become a tamper-evident triage feed officers can trust." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<!-- Leaflet CSS/JS are lazy-loaded when the console section approaches the viewport (see loadLeaflet) -->
 <style>
 :root{
   --pine:#0A1F1A; --pine-deep:#071614; --pine-mid:#0F2921;
@@ -164,9 +177,8 @@ footer .dev{color:var(--ember)}
 
 <!-- HERO -->
 <header class="hero" id="top">
-  <video id="heroVideo" autoplay muted playsinline poster="">
-    <source src="video/hero.mp4#t=10" type="video/mp4" />
-  </video>
+  <!-- source is injected by JS so the heavy video is skipped on reduced-motion / data-saver / slow links -->
+  <video id="heroVideo" muted playsinline preload="auto"></video>
   <div class="overlay"></div>
   <nav>
     <div class="wordmark">PRAHARI<span class="dev">प्रहरी</span></div>
@@ -201,7 +213,7 @@ footer .dev{color:var(--ember)}
     <div class="demo-head">
       <div>
         <h2>Officer console, live preview</h2>
-        <p>Reports cluster, the rule engine tiers them, and the evidence chain proves nothing was altered.</p>
+        <p>Reports cluster, the rule engine tiers them, and the evidence chain proves nothing was altered. This is a self-contained preview — <a href="/console.html">open the live, API-backed console&nbsp;→</a></p>
       </div>
       <div class="demo-actions">
         <button class="btn btn-primary" id="seedBtn">Seed demo reports</button>
@@ -249,11 +261,11 @@ footer .dev{color:var(--ember)}
 <footer>
   <div class="wrap">
     <div class="wordmark" style="font-size:1.05rem">PRAHARI<span class="dev">प्रहरी</span></div>
+    <a href="/console.html">live officer console</a>
     <div>Footage: “Save Planet” by Utku Demircan.</div>
   </div>
 </footer>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 // ---------- deterministic tiering rule (NOT an LLM) ----------
 function tierOf(reportCount, ambientFlag){
@@ -442,6 +454,7 @@ function simulateTamper(){
 
 // ---------- controls ----------
 async function seed(){
+  await loadLeaflet();
   state.incidents = seedData();
   state.selected = null;
   drawMarkers(); renderList(); renderDetail();
@@ -461,20 +474,63 @@ async function refresh(){
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
-  // hero video: start at 0:10 and loop from there (not from 0)
-  const hv = document.getElementById("heroVideo");
-  if(hv){
-    const START = 10;
-    const seekStart = ()=>{ if(hv.duration > START && hv.currentTime < START) hv.currentTime = START; };
-    if(hv.readyState >= 1) seekStart(); else hv.addEventListener("loadedmetadata", seekStart);
-    hv.addEventListener("ended", ()=>{ hv.currentTime = START; hv.play(); });
+  setupHeroVideo();
+  // defer Leaflet until the console section is near the viewport
+  const demo = document.getElementById("console");
+  if("IntersectionObserver" in window){
+    const io = new IntersectionObserver((entries)=>{
+      if(entries.some(e=>e.isIntersecting)){ loadLeaflet(); io.disconnect(); }
+    },{rootMargin:"400px"});
+    io.observe(demo);
+  } else {
+    loadLeaflet();
   }
-  initMap();
   document.getElementById("seedBtn").onclick = seed;
   document.getElementById("refreshBtn").onclick = refresh;
   document.getElementById("verifyBtn").onclick = verifyChain;
   document.getElementById("tamperBtn").onclick = simulateTamper;
 });
+
+// hero video: skip the heavy asset on reduced-motion / data-saver / slow links; else start at 0:10 and loop from there
+function setupHeroVideo(){
+  const hv = document.getElementById("heroVideo");
+  if(!hv) return;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const conn = navigator.connection || {};
+  const skip = reduce || conn.saveData === true || /(^|\b)(slow-)?2g$/.test(conn.effectiveType || "");
+  if(skip){ hv.remove(); return; } // the CSS gradient fallback stands in
+  const START = 10;
+  const source = document.createElement("source");
+  source.src = "video/hero.mp4#t=10";
+  source.type = "video/mp4";
+  hv.appendChild(source);
+  const seekStart = ()=>{ if(hv.duration > START && hv.currentTime < START) hv.currentTime = START; };
+  hv.addEventListener("loadedmetadata", seekStart);
+  hv.addEventListener("ended", ()=>{ hv.currentTime = START; hv.play(); });
+  hv.load();
+  hv.play().catch(()=>{});
+}
+
+// lazy-load Leaflet CSS/JS only when the demo is approached; initMap runs once loaded
+let leafletPromise = null;
+function loadLeaflet(){
+  if(leafletPromise) return leafletPromise;
+  leafletPromise = new Promise((resolve)=>{
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    css.integrity = "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";
+    css.crossOrigin = "";
+    document.head.appendChild(css);
+    const s = document.createElement("script");
+    s.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    s.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";
+    s.crossOrigin = "";
+    s.onload = ()=>{ initMap(); resolve(); };
+    document.head.appendChild(s);
+  });
+  return leafletPromise;
+}
 </script>
 </body>
 </html>
