@@ -4,73 +4,279 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Prahari — Officer Console</title>
-  <meta name="description" content="Prahari officer console — the live, API-backed triage feed: geo-clustered incidents, deterministic confidence tiers, and a hash-chained evidence ledger." />
+  <meta name="description" content="Prahari officer console — the live, API-backed triage feed: geo-clustered incidents, deterministic confidence tiers, ambient IMD/CWC corroboration, and a hash-chained evidence ledger." />
   <meta name="theme-color" content="#071614" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23071614'/%3E%3Cpath d='M16 4l9 3.5v7.2c0 5.9-3.8 9.9-9 12.8-5.2-2.9-9-6.9-9-12.8V7.5z' fill='none' stroke='%23E08E45' stroke-width='2.2'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=6" />
 </head>
 <body>
+  <!-- icon sprite (stroke icons, currentColor) -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-seed" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 2.64-6.36"/><path d="M3 3v6h6"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-shield-x" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6z"/><path d="M9.5 9.5l5 5M14.5 9.5l-5 5"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M4 20h16"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
+    <symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.01"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 20 12z"/></symbol>
+    <symbol id="i-sms" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21l3-4"/><path d="M7 9h10M7 12h6"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+    <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6h14M12 6v13M9 19h6"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-rain" viewBox="0 0 24 24"><path d="M7 15a5 5 0 1 1 1.6-9.7A6 6 0 0 1 20 9.5 3.5 3.5 0 0 1 17.5 15z"/><path d="M8 18l-1 3M12 18l-1 3M16 18l-1 3"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  </svg>
+
+  <div class="wake-banner" id="wakeBanner" role="status" hidden>
+    <span class="spinner" aria-hidden="true"></span>
+    <span id="wakeText">Waking the evidence API — free-tier servers sleep when idle and can take up to a minute to start.</span>
+  </div>
+
   <header class="topbar">
     <div class="brand">
-      <span class="logo">प्रहरी</span>
-      <div>
-        <h1>Prahari</h1>
-        <p>Bystander-corroborated flood verification &mdash; Mumbai / Maharashtra monsoon</p>
+      <a href="/" class="logo" title="Back to Prahari home">प्रहरी</a>
+      <div class="brand-text">
+        <h1>Prahari <span class="brand-sub">Officer Console</span></h1>
+        <p>Flood triage · Mumbai / Maharashtra monsoon · deterministic verdicts</p>
       </div>
     </div>
+
+    <div class="status-cluster">
+      <span class="status-pill" id="apiStatus" data-state="connecting">
+        <span class="dot" aria-hidden="true"></span><span class="label">Connecting…</span>
+      </span>
+      <span class="updated" id="updatedAt" title="Last successful sync"><svg class="ico"><use href="#i-clock"/></svg><span>—</span></span>
+      <label class="switch" title="Auto-refresh every 15 seconds">
+        <input type="checkbox" id="autoToggle" checked />
+        <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+        <span class="switch-label">Live</span>
+      </label>
+    </div>
+
     <div class="actions">
-      <a href="/" class="home-link">← back to Prahari</a>
-      <button id="seedBtn" class="btn">Seed demo reports</button>
-      <button id="refreshBtn" class="btn primary">Refresh feed</button>
+      <a href="/" class="home-link"><svg class="ico"><use href="#i-back"/></svg>Home</a>
+      <button id="resetBtn" class="btn ghost" type="button" title="Clear all reports and the ledger">
+        <svg class="ico"><use href="#i-reset"/></svg><span>Reset</span>
+      </button>
+      <button id="seedBtn" class="btn" type="button" title="Load the bundled Mumbai sample reports">
+        <svg class="ico"><use href="#i-seed"/></svg><span>Seed demo</span>
+      </button>
+      <button id="newReportBtn" class="btn" type="button" title="Simulate a bystander report (N)">
+        <svg class="ico"><use href="#i-plus"/></svg><span>New report</span>
+      </button>
+      <button id="refreshBtn" class="btn primary" type="button" title="Refresh the feed (R)">
+        <svg class="ico"><use href="#i-refresh"/></svg><span>Refresh</span>
+      </button>
     </div>
   </header>
 
-  <main>
-    <section class="left">
-      <div class="panel">
+  <!-- KPI strip -->
+  <section class="kpis" aria-label="Situation summary">
+    <article class="kpi kpi-wide">
+      <div class="kpi-head"><span>Active incidents</span></div>
+      <div class="kpi-num" id="kpiIncidents" data-value="0">—</div>
+      <div class="tierbar" id="tierBar" role="img" aria-label="Incidents by tier"></div>
+      <div class="tierbar-legend" id="tierLegend"></div>
+    </article>
+    <article class="kpi t-high">
+      <div class="kpi-head"><span class="glyph" aria-hidden="true">◆</span><span>High-confidence</span></div>
+      <div class="kpi-num" id="kpiHigh" data-value="0">—</div>
+      <div class="kpi-foot">ready for dispatch review</div>
+    </article>
+    <article class="kpi t-corr">
+      <div class="kpi-head"><span class="glyph" aria-hidden="true">▲</span><span>Corroborated</span></div>
+      <div class="kpi-num" id="kpiCorr" data-value="0">—</div>
+      <div class="kpi-foot">independent or ambient support</div>
+    </article>
+    <article class="kpi t-unv">
+      <div class="kpi-head"><span class="glyph" aria-hidden="true">○</span><span>Unverified</span></div>
+      <div class="kpi-num" id="kpiUnv" data-value="0">—</div>
+      <div class="kpi-foot">lone report, awaiting support</div>
+    </article>
+    <article class="kpi kpi-wide">
+      <div class="kpi-head"><span>Bystander reports</span><span class="kpi-sub" id="kpiChannels"></span></div>
+      <div class="kpi-row">
+        <div class="kpi-num" id="kpiReports" data-value="0">—</div>
+        <div class="spark" id="activityChart" aria-label="Reports received in the last 60 minutes"></div>
+      </div>
+      <div class="kpi-foot" id="kpiReporters">last 60 minutes, 5-minute bins</div>
+    </article>
+    <article class="kpi" id="kpiLedgerTile">
+      <div class="kpi-head"><span>Evidence ledger</span></div>
+      <div class="kpi-num" id="kpiLedger" data-value="0">—</div>
+      <div class="kpi-foot ledger-state" id="kpiLedgerState">not yet verified</div>
+    </article>
+  </section>
+
+  <main class="grid">
+    <!-- Feed -->
+    <section class="panel feed" aria-label="Incident feed">
+      <div class="panel-head">
+        <h2>Incident feed <span class="count" id="feedCount">0</span></h2>
+        <button class="icon-btn" id="exportCsvBtn" type="button" title="Export incidents as CSV"><svg class="ico"><use href="#i-download"/></svg></button>
+      </div>
+      <div class="toolbar">
+        <label class="search">
+          <svg class="ico"><use href="#i-search"/></svg>
+          <input type="search" id="searchInput" placeholder="Search zone or landmark" autocomplete="off" aria-label="Search incidents" />
+          <kbd>/</kbd>
+        </label>
+        <div class="filters" role="group" aria-label="Filter by tier">
+          <button type="button" class="fchip t-high" data-tier="High-Confidence" aria-pressed="true"><span class="glyph">◆</span>High <b>0</b></button>
+          <button type="button" class="fchip t-corr" data-tier="Corroborated" aria-pressed="true"><span class="glyph">▲</span>Corr. <b>0</b></button>
+          <button type="button" class="fchip t-unv" data-tier="Unverified" aria-pressed="true"><span class="glyph">○</span>Unverified <b>0</b></button>
+        </div>
+        <label class="sort">
+          <span>Sort</span>
+          <select id="sortSelect" aria-label="Sort incidents">
+            <option value="priority">Priority</option>
+            <option value="reports">Most reports</option>
+            <option value="recent">Most recent</option>
+          </select>
+        </label>
+      </div>
+      <div id="incidentList" class="list" aria-live="polite"></div>
+    </section>
+
+    <!-- Map + ambient -->
+    <section class="mapcol">
+      <div class="panel map-panel">
         <div class="panel-head">
-          <h2>Active incidents</h2>
-          <div class="legend">
-            <span class="chip high">High-Confidence</span>
-            <span class="chip corr">Corroborated</span>
-            <span class="chip unv">Unverified</span>
+          <h2>Situation map</h2>
+          <div class="head-actions">
+            <button class="btn small toggle" id="ambientToggle" type="button" aria-pressed="true" title="Show IMD/CWC ambient risk zones"><svg class="ico"><use href="#i-layers"/></svg><span>Ambient zones</span></button>
+            <button class="btn small" id="fitBtn" type="button" title="Fit map to incidents"><svg class="ico"><use href="#i-fit"/></svg><span>Fit</span></button>
           </div>
         </div>
-        <div id="incidentList" class="incident-list"></div>
+        <div id="map" aria-label="Map of incidents"></div>
+      </div>
+
+      <div class="panel ambient-panel">
+        <div class="panel-head">
+          <h2>Ambient risk <span class="muted-inline">IMD rainfall · CWC river level</span></h2>
+          <span class="tag">mock feed</span>
+        </div>
+        <div id="ambientList" class="ambient-list"></div>
       </div>
     </section>
 
-    <section class="center">
-      <div id="map"></div>
-    </section>
-
-    <section class="right">
-      <div class="panel" id="detailPanel">
-        <div class="panel-head"><h2>Incident detail</h2></div>
+    <!-- Detail + ledger -->
+    <section class="side">
+      <div class="panel detail-panel" aria-label="Incident detail">
+        <div class="panel-head"><h2>Incident detail</h2><span class="kbd-hint"><kbd>J</kbd><kbd>K</kbd> to step</span></div>
         <div id="detail" class="detail">
-          <p class="muted">Select an incident to inspect its reports, ambient corroboration, and evidence trail.</p>
+          <div class="empty">
+            <svg class="ico big"><use href="#i-pin"/></svg>
+            <p>Select an incident to inspect its reports, the rule-engine reasoning, ambient corroboration, and its evidence seal.</p>
+          </div>
         </div>
       </div>
 
-      <div class="panel">
+      <div class="panel ledger-panel" aria-label="Evidence ledger">
         <div class="panel-head">
           <h2>Evidence ledger</h2>
-          <div class="ledger-actions">
-            <button id="verifyLedgerBtn" class="btn small">Verify chain</button>
-            <button id="tamperBtn" class="btn small danger">Simulate tamper</button>
+          <div class="head-actions">
+            <button id="verifyLedgerBtn" class="btn small" type="button" title="Recompute every hash in the chain"><svg class="ico"><use href="#i-shield"/></svg><span>Verify</span></button>
+            <button id="tamperBtn" class="btn small danger" type="button" title="Edit the oldest ledger row in the database without re-hashing"><svg class="ico"><use href="#i-alert"/></svg><span>Simulate tamper</span></button>
+            <button id="exportLedgerBtn" class="icon-btn" type="button" title="Export ledger as JSON"><svg class="ico"><use href="#i-download"/></svg></button>
           </div>
         </div>
-        <div id="ledgerStatus" class="ledger-status"></div>
+        <div id="ledgerStatus" class="ledger-status" data-state="idle">
+          <svg class="ico"><use href="#i-shield"/></svg><span>Not yet verified</span>
+        </div>
         <div id="ledgerList" class="ledger-list"></div>
       </div>
     </section>
   </main>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js"></script>
+  <footer class="statusbar">
+    <span><svg class="ico"><use href="#i-lock"/></svg>Verdicts: deterministic rule engine · AI extracts facts only · SHA-256 hash chain</span>
+    <span class="shortcuts"><svg class="ico"><use href="#i-keyboard"/></svg><kbd>/</kbd> search <kbd>R</kbd> refresh <kbd>N</kbd> new report <kbd>J</kbd>/<kbd>K</kbd> step <kbd>Esc</kbd> close</span>
+  </footer>
+
+  <!-- Report simulator -->
+  <dialog id="reportDialog" class="dialog" aria-labelledby="reportTitle">
+    <form id="reportForm" method="dialog" novalidate>
+      <div class="dialog-head">
+        <div>
+          <h3 id="reportTitle">Simulate a bystander report</h3>
+          <p>Sent through the same ingestion pipeline as a real WhatsApp or SMS message.</p>
+        </div>
+        <button type="button" class="icon-btn" id="closeDialogBtn" aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
+      </div>
+
+      <fieldset class="field">
+        <legend>Channel</legend>
+        <div class="segmented">
+          <label><input type="radio" name="channel" value="whatsapp" checked /><span><svg class="ico"><use href="#i-chat"/></svg>WhatsApp</span></label>
+          <label><input type="radio" name="channel" value="sms" /><span><svg class="ico"><use href="#i-sms"/></svg>SMS fallback</span></label>
+        </div>
+      </fieldset>
+
+      <label class="field">
+        <span class="field-label">Location</span>
+        <select id="zoneSelect" name="zone" required></select>
+        <span class="hint" id="zoneHint">WhatsApp shares GPS; SMS sends <code>FLOOD &lt;landmark&gt;</code> and is resolved via the gazetteer.</span>
+      </label>
+
+      <fieldset class="field" id="mediaField">
+        <legend>Evidence</legend>
+        <div class="segmented">
+          <label><input type="radio" name="media" value="photo" checked /><span><svg class="ico"><use href="#i-camera"/></svg>Photo</span></label>
+          <label><input type="radio" name="media" value="voice" /><span><svg class="ico"><use href="#i-mic"/></svg>Voice note</span></label>
+          <label><input type="radio" name="media" value="text" /><span><svg class="ico"><use href="#i-text"/></svg>Text only</span></label>
+        </div>
+      </fieldset>
+
+      <label class="field" id="noteField">
+        <span class="field-label">What the bystander sees <span class="optional">optional</span></span>
+        <input type="text" id="noteInput" maxlength="140" placeholder="e.g. waist-deep water, cars submerged" />
+        <span class="quick" id="quickChips">
+          <button type="button" data-q="waist-deep water">waist-deep water</button>
+          <button type="button" data-q="cars submerged">cars submerged</button>
+          <button type="button" data-q="people stranded">people stranded</button>
+          <button type="button" data-q="road fully submerged">road fully submerged</button>
+        </span>
+      </label>
+
+      <fieldset class="field">
+        <legend>Reporter</legend>
+        <div class="segmented">
+          <label><input type="radio" name="reporter" value="new" checked /><span><svg class="ico"><use href="#i-users"/></svg>New bystander</span></label>
+          <label><input type="radio" name="reporter" value="repeat" /><span>Same as last</span></label>
+        </div>
+        <span class="hint">Corroboration counts <em>independent</em> reporters — the same sender twice never raises the tier.</span>
+      </fieldset>
+
+      <div class="dialog-foot">
+        <button type="button" class="btn ghost" id="cancelDialogBtn">Cancel</button>
+        <button type="submit" class="btn primary" id="submitReportBtn"><svg class="ico"><use href="#i-check"/></svg><span>Send report</span></button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+  <div class="chart-tip" id="chartTip" role="tooltip" hidden></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
