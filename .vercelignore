@@ -1,0 +1,5 @@
+backend/
+.github/
+render.yaml
+*.pyc
+__pycache__/

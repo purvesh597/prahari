@@ -22,6 +22,7 @@ Endpoints:
 from __future__ import annotations
 
 from fastapi import FastAPI, Form, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -35,6 +36,16 @@ from .seed import seed_sample_reports
 from .service import current_incidents, get_incident, load_reports, report_row, verify_incident
 
 app = FastAPI(title="Prahari", description="Bystander-corroborated disaster verification")
+
+# The static frontend can be served from another origin (e.g. Vercel) while this
+# API runs on Render. No cookies/credentials are used, so a permissive policy is safe.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 _whatsapp = WhatsAppAdapter()
 _sms = SMSAdapter()
