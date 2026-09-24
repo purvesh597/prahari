@@ -18,6 +18,7 @@ Endpoints:
   Demo helpers:
     POST /api/demo/seed              Load bundled sample reports
     POST /api/demo/tamper            Mutate a ledger row to prove tamper-evidence
+    POST /api/demo/reset             Clear reports + ledger for a clean replay
 """
 from __future__ import annotations
 
@@ -151,6 +152,16 @@ def api_ledger_verify():
 def api_seed():
     n = seed_sample_reports()
     return {"seeded": n}
+
+
+@app.post("/api/demo/reset")
+def api_reset():
+    """Wipe reports and the ledger so the demo can be replayed from a clean slate."""
+    with get_conn() as conn:
+        conn.execute("DELETE FROM reports")
+        conn.execute("DELETE FROM ledger")
+        conn.execute("DELETE FROM sqlite_sequence WHERE name = 'ledger'")
+    return {"reset": True}
 
 
 @app.post("/api/demo/tamper")
