@@ -18,9 +18,13 @@ jobs:
           SERVICE_ID: srv-dailg3gae00c73f0mi9g
         run: |
           set -euo pipefail
+          # curl -f makes the job fail on real HTTP errors (bad key, 4xx/5xx).
+          # A successful POST is the deploy signal; just echo the response so a
+          # parsing quirk can't turn a real deploy into a false red X.
           resp=$(curl -fsS -X POST \
             "https://api.render.com/v1/services/${SERVICE_ID}/deploys" \
             -H "Authorization: Bearer ${RENDER_API_KEY}" \
             -H "Content-Type: application/json" \
             -d '{"clearCache":"do_not_clear"}')
-          echo "$resp" | python3 -c "import sys,json; d=json.load(sys.stdin); print('Triggered deploy', d.get('id'), '-', d.get('status'))"
+          echo "Render deploy triggered."
+          echo "$resp" | head -c 800
