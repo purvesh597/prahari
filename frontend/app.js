@@ -1,5 +1,11 @@
 // Prahari officer console — talks to the FastAPI backend.
-const API = "";
+// When this page is served from the same origin as the API (Render, or local dev)
+// we use relative paths. When it is served from a different origin (e.g. the
+// Vercel-hosted frontend) we point at the Render backend directly.
+const BACKEND_ORIGIN = "https://prahari-mhqy.onrender.com";
+const _sameOrigin = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ||
+  location.origin === BACKEND_ORIGIN;
+const API = _sameOrigin ? "" : BACKEND_ORIGIN;
 const TIER_CLASS = { "High-Confidence": "high", "Corroborated": "corr", "Unverified": "unv" };
 // tier colors match the landing legend: high = green, corroborated = ember, unverified = red
 const TIER_COLOR = { "High-Confidence": "#5FAE7A", "Corroborated": "#E08E45", "Unverified": "#D3573F" };
